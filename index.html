@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gift Card Balance Checker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .price-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .price-display::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.1);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .price-display:hover::before {
+            opacity: 1;
+        }
+
+        .price-label {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.9;
+        }
+
+        .price-amount {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .price-note {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .validate-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+
+        .validate-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .validate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            padding: 1rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            display: none;
+            text-align: left;
+        }
+
+        .result.accepted {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .result.declined {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .result.pending {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .result.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .result-header {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .result-details {
+            font-size: 0.9rem;
+            font-weight: 500;
+            opacity: 0.8;
+            margin-top: 0.5rem;
+        }
+
+        .card-info {
+            background: rgba(255, 255, 255, 0.5);
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-top: 0.75rem;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .card-price {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+
+        .admin-link {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e1e5e9;
+        }
+
+        .admin-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .admin-link a:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .format-hint {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        .examples {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            text-align: left;
+        }
+
+        .examples h4 {
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .examples code {
+            background: #e9ecef;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            display: block;
+            margin: 0.25rem 0;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 0.5rem;
+            }
+            
+            .container {
+                margin: 0;
+                padding: 1.5rem;
+                border-radius: 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .price-amount {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎁 Gift Card Balance Checker</h1>
+            <p>Enter your gift card code to check its balance</p>
+        </div>
+
+        <div class="price-display" id="priceDisplay">
+            <div class="price-label">Current Gift Card Price</div>
+            <div class="price-amount" id="priceAmount">Loading...</div>
+            <div class="price-note">Check your card balance below</div>
+        </div>
+
+        <form id="validateForm">
+            <div class="form-group">
+                <label for="giftCardCode">Gift Card Code</label>
+                <input 
+                    type="text" 
+                    id="giftCardCode" 
+                    name="code" 
+                    placeholder="Enter your gift card code"
+                    maxlength="25"
+                    required
+                >
+                <div class="format-hint">
+                    Up to 25 characters (letters and numbers only)
+                </div>
+            </div>
+
+            <button type="submit" class="validate-btn" id="validateBtn">
+                CHECK BALANCE
+            </button>
+        </form>
+
+        <div id="result" class="result"></div>
+
+        <div class="examples">
+            <h4>Example Format:</h4>
+            <code>ABC123XYZ4567890</code>
+            <code>1A2B3C4D5E6F7G8H</code>
+        </div>
+    </div>
+
+    <script>
+        // Currency symbols mapping
+        const CURRENCY_SYMBOLS = {
+            'USD': '$',
+            'EUR': '€',
+            'GBP': '£',
+            'CAD': 'C$',
+            'AUD': 'A$',
+            'JPY': '¥'
+        };
+
+        // API base: prefer same-origin; if opened via file:// fallback to localhost
+        const API_BASE = (window.location && window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
+
+        // API helper functions
+        async function apiRequest(url, options = {}) {
+            try {
+                const response = await fetch(API_BASE + url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'Request failed');
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+                // Get current price from API
+        async function getCurrentPrice() {
+            try {
+                const response = await apiRequest(`/api/price`);
+                // Handle nested price object
+                return {
+                    amount: response.price.amount,
+                    currency: response.price.currency
+                };
+            } catch (err) {
+                console.error('Failed to load price:', err);
+                return { amount: 50, currency: 'USD' }; // fallback
+            }
+        }
+
+        // Validate gift card via API
+        async function validateGiftCard(code) {
+            try {
+                const response = await apiRequest('/api/validate', {
+                    method: 'POST',
+                    body: JSON.stringify({ code })
+                });
+                return response;
+            } catch (error) {
+                console.error('Error validating gift card:', error);
+                throw error;
+            }
+        }
+
+        // Format price display
+        function formatPrice(amount, currency) {
+            if (amount === undefined || amount === null || isNaN(amount)) return 'Not set';
+            const symbol = CURRENCY_SYMBOLS[currency] || currency;
+            return `${symbol}${parseFloat(amount).toFixed(2)}`;
+        }
+
+        // Load and display current price
+        async function loadCurrentPrice() {
+            const priceDisplay = document.getElementById('priceDisplay');
+            const priceAmount = document.getElementById('priceAmount');
+            
+            try {
+                const priceData = await getCurrentPrice();
+                
+                if (priceData && priceData.amount !== undefined) {
+                    const formattedPrice = formatPrice(priceData.amount, priceData.currency);
+                    priceAmount.textContent = formattedPrice;
+                    priceDisplay.classList.add('pulse');
+                    
+                    // Remove pulse animation after 2 seconds
+                    setTimeout(() => {
+                        priceDisplay.classList.remove('pulse');
+                    }, 2000);
+                } else {
+                    priceAmount.textContent = 'Price not set';
+                    priceAmount.style.opacity = '0.6';
+                }
+            } catch (error) {
+                priceAmount.textContent = 'Error loading price';
+                priceAmount.style.opacity = '0.6';
+                console.error('Failed to load price:', error);
+            }
+        }
+
+        const form = document.getElementById('validateForm');
+        const input = document.getElementById('giftCardCode');
+        const button = document.getElementById('validateBtn');
+        const result = document.getElementById('result');
+
+        // Format input as user types
+        input.addEventListener('input', function(e) {
+            this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            
+            // Hide previous results when typing
+            result.style.display = 'none';
+            result.className = 'result';
+        });
+
+        // Form submission
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const code = input.value.trim();
+            
+            // Validate format
+            if (!code || code.length > 25 || !/^[A-Z0-9]{1,25}$/.test(code)) {
+                showResult('error', '❌ Invalid Format', 'Please enter up to 25 characters (letters and numbers only).');
+                return;
+            }
+
+            // Show loading state
+            button.disabled = true;
+            button.innerHTML = '<span class="loading"></span> Checking...';
+
+            try {
+                // Validate card via API
+                const response = await validateGiftCard(code);
+                const card = response.card;
+                const globalPrice = response.globalPrice;
+                
+                const statusMessages = {
+                    'accepted': {
+                        icon: '✅',
+                        title: 'Card Accepted',
+                        message: 'Your gift card is valid and ready to use!'
+                    },
+                    'declined': {
+                        icon: '❌',
+                        title: 'Card Declined', 
+                        message: 'This gift card is not valid or has been declined.'
+                    },
+                    'pending': {
+                        icon: '⏳',
+                        title: 'Under Review',
+                        message: 'Your gift card is being processed. Please check back later.'
+                    }
+                };
+                
+                const statusInfo = statusMessages[card.status];
+                showResult(card.status, statusInfo.title, statusInfo.message, { card, globalPrice });
+                
+            } catch (error) {
+                showResult('error', '❌ Error', error.message || 'Failed to validate gift card. Please try again.');
+            } finally {
+                // Reset button
+                button.disabled = false;
+                button.innerHTML = 'CHECK BALANCE';
+            }
+        });
+
+        function showResult(type, title, message, data = null) {
+            const resultHeader = `<div class="result-header">${getStatusIcon(type)} ${title}</div>`;
+            const resultMessage = `<div class="result-details">${message}</div>`;
+            
+            let cardInfo = '';
+            if (data && data.card) {
+                // Show individual card price if set, otherwise show global price
+                const displayPrice = data.card.price || data.globalPrice;
+                
+                if (displayPrice && displayPrice.amount !== undefined) {
+                    const formattedPrice = formatPrice(displayPrice.amount, displayPrice.currency);
+                    cardInfo = `
+                        <div class="card-info">
+                            <div>Card Value</div>
+                            <div class="card-price">${formattedPrice}</div>
+                            ${data.card.price ? '<small>Individual card pricing</small>' : '<small>Standard pricing</small>'}
+                        </div>
+                    `;
+                }
+            }
+            
+            result.className = `result ${type}`;
+            result.innerHTML = resultHeader + resultMessage + cardInfo;
+            result.style.display = 'block';
+        }
+
+        function getStatusIcon(status) {
+            const icons = {
+                'accepted': '✅',
+                'declined': '❌',
+                'pending': '⏳',
+                'error': '⚠️'
+            };
+            return icons[status] || '⚠️';
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCurrentPrice();
+        });
+
+        // Refresh price every 30 seconds to catch any updates
+        setInterval(loadCurrentPrice, 30000);
+    </script>
+</body>
+</html>

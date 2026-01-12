@@ -16,8 +16,9 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             padding: 1rem;
         }
 
@@ -29,6 +30,7 @@
             width: 100%;
             max-width: 450px;
             text-align: center;
+            margin: auto 0;
         }
 
         .header {
@@ -299,13 +301,36 @@
                 font-size: 1.5rem;
             }
         }
+
+        /* Footer styles */
+        footer.site-footer {
+            width: 100%;
+            margin-top: 0;
+            padding: 0.75rem 0;
+            color: rgba(255,255,255,0.95);
+            text-align: center;
+            font-size: 0.9rem;
+            opacity: 0.95;
+        }
+
+        footer.site-footer a {
+            color: rgba(255,255,255,0.95);
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
+        @media (max-width: 480px) {
+            footer.site-footer {
+                font-size: 0.85rem;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>🎁 Gift Card Balance Checker</h1>
-            <p>Enter your gift card code to check its balance</p>
+            <p>Enter your gift card to check its balance and validity</p>
         </div>
 
         <div class="price-display" id="priceDisplay">
@@ -343,6 +368,10 @@
             <code>1A2B3C4D5E6F7G8H</code>
         </div>
     </div>
+
+    <footer class="site-footer" role="contentinfo">
+        <div>© 2026 GiftCard</div>
+    </footer>
 
     <script>
         // Currency symbols mapping
